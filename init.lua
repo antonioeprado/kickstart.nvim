@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.o.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -166,6 +166,16 @@ vim.o.scrolloff = 10
 -- See `:help 'confirm'`
 vim.o.confirm = true
 
+-- Primeagen sets
+vim.o.tabstop = 4
+vim.o.softtabstop = 4
+vim.o.shiftwidth = 4
+vim.o.expandtab = true
+
+vim.o.smartindent = true
+vim.o.wrap = false
+vim.o.colorcolumn = '80'
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -198,6 +208,10 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+-- When highlighted, move line(s) up or down
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
@@ -799,12 +813,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
         opts = {},
       },
@@ -881,20 +895,85 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
+    'scottmckendry/cyberdream.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     config = function()
       ---@diagnostic disable-next-line: missing-fields
-      require('tokyonight').setup {
-        styles = {
-          comments = { italic = false }, -- Disable italics in comments
+      require('cyberdream').setup {
+        -- Set light or dark variant
+        variant = 'default', -- use "light" for the light variant. Also accepts "auto" to set dark or light colors based on the current value of `vim.o.background`
+
+        -- Enable transparent background
+        transparent = false,
+
+        -- Reduce the overall saturation of colours for a more muted look
+        saturation = 1, -- accepts a value between 0 and 1. 0 will be fully desaturated (greyscale) and 1 will be the full color (default)
+
+        -- Enable italics comments
+        italic_comments = false,
+
+        -- Replace all fillchars with ' ' for the ultimate clean look
+        hide_fillchars = false,
+
+        -- Apply a modern borderless look to pickers like Telescope, Snacks Picker & Fzf-Lua
+        borderless_pickers = false,
+
+        -- Set terminal colors used in `:terminal`
+        terminal_colors = false,
+
+        -- Improve start up time by caching highlights. Generate cache with :CyberdreamBuildCache and clear with :CyberdreamClearCache
+        cache = false,
+
+        -- Override highlight groups with your own colour values
+        highlights = {
+          -- Highlight groups to override, adding new groups is also possible
+          -- See `:h highlight-groups` for a list of highlight groups or run `:hi` to see all groups and their current values
+
+          -- Example:
+          Comment = { fg = '#696969', bg = 'NONE', italic = true },
+
+          -- More examples can be found in `lua/cyberdream/extensions/*.lua`
+        },
+        -- Override a highlight group entirely using the built-in colour palette
+        overrides = function(colors) -- NOTE: This function nullifies the `highlights` option
+          -- Example:
+          return {
+            Comment = { fg = colors.green, bg = 'NONE', italic = true },
+            ['@property'] = { fg = colors.magenta, bold = true },
+          }
+        end,
+
+        -- Override colors
+        colors = {
+          -- For a list of colors see `lua/cyberdream/colours.lua`
+
+          -- Override colors for both light and dark variants
+          bg = '#000000',
+          green = '#00ff00',
+
+          -- If you want to override colors for light or dark variants only, use the following format:
+          dark = {
+            magenta = '#ff00ff',
+            fg = '#eeeeee',
+          },
+          light = {
+            red = '#ff5c57',
+            cyan = '#5ef1ff',
+          },
+        },
+
+        -- Disable or enable colorscheme extensions
+        extensions = {
+          telescope = true,
+          notify = true,
+          mini = true,
         },
       }
 
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'cyberdream'
     end,
   },
 
@@ -974,17 +1053,17 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
